@@ -2,7 +2,6 @@ import tensorflow as tf
 import csv
 import numpy as np
 from sklearn.model_selection import train_test_split
-import pandas as pd
 
 def is_number(string): # sacada de internet
     try:
@@ -13,6 +12,7 @@ def is_number(string): # sacada de internet
 
 def normalizar_x(year, month):
     x = np.column_stack(((year - 2015.0) / 10, (np.cos(month * 2 * np.pi / 12) + 1) / 2, (np.sin(month * 2 * np.pi / 12) + 1) / 2))
+    #x = np.column_stack(((year - 2015.0) / 10, month/12))
     return x
 
 def normalizar_y(gasto, coste, max_gasto, max_coste):
@@ -47,35 +47,35 @@ if __name__ == '__main__':
             current_year = int(row[0]) # actualiza el año
             continue
         elif row[0] == "enero":
-            month = np.append(month, 0.0)
-        elif row[0] == "febrero":
             month = np.append(month, 1.0)
-        elif row[0] == "marzo":
+        elif row[0] == "febrero":
             month = np.append(month, 2.0)
-        elif row[0] == "abril":
+        elif row[0] == "marzo":
             month = np.append(month, 3.0)
-        elif row[0] == "mayo":
+        elif row[0] == "abril":
             month = np.append(month, 4.0)
-        elif row[0] == "junio":
+        elif row[0] == "mayo":
             month = np.append(month, 5.0)
-        elif row[0] == "julio":
+        elif row[0] == "junio":
             month = np.append(month, 6.0)
+        elif row[0] == "julio":
+            month = np.append(month, 7.0)
         elif row[0] == "agosto":
             if current_year == 2017: # mes eliminado manualmente
                 continue
-            month = np.append(month, 7.0)
-        elif row[0] == "septiembre":
             month = np.append(month, 8.0)
-        elif row[0] == "octubre":
+        elif row[0] == "septiembre":
             month = np.append(month, 9.0)
+        elif row[0] == "octubre":
+            month = np.append(month, 10.0)
         elif row[0] == "noviembre":
             if current_year == 2016: # mes eliminado manualmente
                 continue
-            month = np.append(month, 10.0)
+            month = np.append(month, 11.0)
         elif row[0] == "diciembre":
             if current_year == 2015: # mes eliminado manualmente
                 continue
-            month = np.append(month, 11.0)
+            month = np.append(month, 12.0)
         else:
             continue
 
@@ -104,7 +104,6 @@ if __name__ == '__main__':
 
     file.close()
 
-
     for i in range(month.size):
         print(int(year[i]), " - ", month[i], ": ", gasto[i], "kWh, ", coste[i], "€")
 
@@ -112,8 +111,12 @@ if __name__ == '__main__':
     #***   Tratamiento  de datos para NN   ***
     #*****************************************
 
+    # MODO DE NORMALIZAR
+    norm = 1
+
     max_gasto = np.max(gasto)*1.5
     max_coste = np.max(coste)*1.5
+    print("max_gasto = ", max_gasto, "max_coste = ", max_coste)
 
     x = normalizar_x(year, month)
     y = normalizar_y(gasto, coste, max_gasto, max_coste)
@@ -129,23 +132,32 @@ if __name__ == '__main__':
 
     # Define the network by stacking layers
     network = tf.keras.models.Sequential([
-        tf.keras.layers.Dense(8, activation='relu'),
+        tf.keras.layers.Dense(10, activation='relu'),
+        tf.keras.layers.Dense(10, activation='relu'),
         tf.keras.layers.Dense(2, activation='relu')
     ])
 
-    # Create the training system
+    # Training system
     network.compile(optimizer='sgd',
                     loss='mse',
                     metrics='mse')
 
     # Train the network with train data
-    network.fit(x_train, y_train, epochs=5)
+    network.fit(x_train, y_train, epochs=250)
 
     # Evaluate the network on test data
-    loss, accuracy = network.evaluate(x_test, y_test)
-    print('Loss =', loss, '\nAccuracy =', accuracy)
+    loss = network.evaluate(x_test, y_test)
+    print('Loss =', loss)
 
     network.save('my_nn.h5')
+
+    y_pred = network.predict(x_test)
+    gasto_pred, coste_pred = desnormalizar_y(y_pred, max_gasto, max_coste)
+    gasto_test, coste_test = desnormalizar_y(y_test, max_gasto, max_coste)
+
+    # ver resultados del test
+    for i in range(len(x_test)):
+        print("gasto test = ", gasto_test[i], ", gasto pred = ", gasto_pred[i], ", coste test = ", coste_test[i], ", coste pred = ", coste_pred[i], ".")
 
 
 
