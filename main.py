@@ -12,7 +12,6 @@ def is_number(string): # sacada de internet
 
 def normalizar_x(year, month):
     x = np.column_stack(((year - 2015.0) / 10, (np.cos(month * 2 * np.pi / 12) + 1) / 2, (np.sin(month * 2 * np.pi / 12) + 1) / 2))
-    #x = np.column_stack(((year - 2015.0) / 10, month/12))
     return x
 
 def normalizar_y(gasto, coste, max_gasto, max_coste):
@@ -23,8 +22,6 @@ def desnormalizar_y(y, max_gasto, max_coste):
     gasto = y[:,0]*max_gasto
     coste = y[:,1]*max_coste
     return gasto, coste
-
-
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -111,9 +108,6 @@ if __name__ == '__main__':
     #***   Tratamiento  de datos para NN   ***
     #*****************************************
 
-    # MODO DE NORMALIZAR
-    norm = 1
-
     max_gasto = np.max(gasto)*1.5
     max_coste = np.max(coste)*1.5
     print("max_gasto = ", max_gasto, "max_coste = ", max_coste)
@@ -149,6 +143,10 @@ if __name__ == '__main__':
     loss = network.evaluate(x_test, y_test)
     print('Loss =', loss)
 
+    #**********************************
+    #***   Guardado y test rápido   ***
+    #**********************************
+
     network.save('my_nn.h5')
 
     y_pred = network.predict(x_test)
@@ -158,6 +156,3 @@ if __name__ == '__main__':
     # ver resultados del test
     for i in range(len(x_test)):
         print("gasto test = ", gasto_test[i], ", gasto pred = ", gasto_pred[i], ", coste test = ", coste_test[i], ", coste pred = ", coste_pred[i], ".")
-
-
-

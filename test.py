@@ -1,8 +1,5 @@
 import tensorflow as tf
-import csv
 import numpy as np
-from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as pl
 
 def desnormalizar_y(y, max_gasto, max_coste):
     gasto = y[:,0]*max_gasto
@@ -14,6 +11,12 @@ def normalizar_x(year, month):
     return x
 
 if __name__ == '__main__':
+
+    #**********************************
+    #***   Predicciones para 2021   ***
+    #**********************************
+
+
     network = tf.keras.models.load_model('my_nn.h5')
 
     max_gasto = 263643.0
